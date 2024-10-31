@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 
@@ -12,14 +10,12 @@ import (
 )
 
 type fuelHandler struct {
-	timeout   time.Duration
 	validator *validator.Validate
 	usecase   model.FuelUsecase
 }
 
-func NewFuelHandler(timeout time.Duration, validator *validator.Validate, usecase model.FuelUsecase) interface{ InitRoutes(g *gin.RouterGroup) } {
+func NewFuelHandler(validator *validator.Validate, usecase model.FuelUsecase) interface{ InitRoutes(g *gin.RouterGroup) } {
 	return &fuelHandler{
-		timeout:   timeout,
 		validator: validator,
 		usecase:   usecase,
 	}

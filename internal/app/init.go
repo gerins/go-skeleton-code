@@ -39,17 +39,17 @@ func Init(gin *gin.Engine, cfg *config.Config) chan bool {
 	 *********************************************/
 	master := gin.Group("/v3/master", middleware.SetAPITimeout(defaultTimeout))
 	{
-		handler.NewFuelHandler(defaultTimeout, validator, fuelUsecase).InitRoutes(master)
+		handler.NewFuelHandler(validator, fuelUsecase).InitRoutes(master)
 	}
 
 	transaction := gin.Group("/v3/transaction")
 	{
-		handler.NewFuelHandler(defaultTimeout, validator, fuelUsecase).InitRoutes(transaction)
+		handler.NewFuelHandler(validator, fuelUsecase).InitRoutes(transaction)
 	}
 
 	report := gin.Group("/v3/report")
 	{
-		handler.NewFuelHandler(defaultTimeout, validator, fuelUsecase).InitRoutes(report)
+		handler.NewFuelHandler(validator, fuelUsecase).InitRoutes(report)
 	}
 
 	// Graceful shutdown
