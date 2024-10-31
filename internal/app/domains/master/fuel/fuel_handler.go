@@ -5,19 +5,22 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 
 	response "go-skeleton-code/pkg/response/gin"
 )
 
 type httpHandler struct {
-	timeout time.Duration
-	usecase Usecase
+	timeout   time.Duration
+	validator *validator.Validate
+	usecase   Usecase
 }
 
-func NewHandler(usecase Usecase, timeout time.Duration) interface{ InitRoutes(g *gin.RouterGroup) } {
+func NewHandler(timeout time.Duration, validator *validator.Validate, usecase Usecase) interface{ InitRoutes(g *gin.RouterGroup) } {
 	return &httpHandler{
-		timeout: timeout,
-		usecase: usecase,
+		timeout:   timeout,
+		validator: validator,
+		usecase:   usecase,
 	}
 }
 
@@ -39,6 +42,11 @@ func (h *httpHandler) GetHandler(g *gin.Context) {
 		return
 	}
 
+	if err := h.validator.StructCtx(ctx, requestPayload); err != nil {
+		response.Failed(g, err)
+		return
+	}
+
 	list, totalData, err := h.usecase.List(ctx, requestPayload)
 	if err != nil {
 		response.Failed(g, err)
@@ -54,6 +62,11 @@ func (h *httpHandler) DetailHandler(g *gin.Context) {
 
 	var requestPayload GetRequest
 	if err := g.Bind(&requestPayload); err != nil {
+		response.Failed(g, err)
+		return
+	}
+
+	if err := h.validator.StructCtx(ctx, requestPayload); err != nil {
 		response.Failed(g, err)
 		return
 	}

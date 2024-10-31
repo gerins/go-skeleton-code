@@ -5,7 +5,7 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	"go-skeleton-code/config"
-	"go-skeleton-code/internal/app/domains/fuel"
+	"go-skeleton-code/internal/app/domains/master/fuel"
 	"go-skeleton-code/pkg/gorm"
 	"go-skeleton-code/pkg/log"
 	"go-skeleton-code/pkg/redis"
@@ -14,23 +14,39 @@ import (
 func Init(gin *gin.Engine, cfg *config.Config) chan bool {
 	var (
 		exitSignal     = make(chan bool)
-		_              = validator.New()
+		validator      = validator.New()
 		defaultTimeout = cfg.App.HTTP.CtxTimeout
 		redis          = redis.Init(cfg.Dependencies.Cache)
 		readDatabase   = gorm.InitPostgres(cfg.Dependencies.Database.Read)
 		writeDatabase  = gorm.InitPostgres(cfg.Dependencies.Database.Write)
 	)
 
-	// Repository
+	/**********************************************
+	 *                Repository
+	 *********************************************/
 	fuelRepository := fuel.NewRepository(readDatabase, writeDatabase)
 
-	// Usecase
+	/**********************************************
+	 *                 Usecase
+	 *********************************************/
 	fuelUsecase := fuel.NewUsecase(cfg.Security, fuelRepository)
 
-	// API handler
+	/**********************************************
+	 *                 Handler
+	 *********************************************/
 	master := gin.Group("/v3/master")
 	{
-		fuel.NewHandler(fuelUsecase, defaultTimeout).InitRoutes(master)
+		fuel.NewHandler(defaultTimeout, validator, fuelUsecase).InitRoutes(master)
+	}
+
+	transaction := gin.Group("/v3/transaction")
+	{
+		fuel.NewHandler(defaultTimeout, validator, fuelUsecase).InitRoutes(transaction)
+	}
+
+	report := gin.Group("/v3/report")
+	{
+		fuel.NewHandler(defaultTimeout, validator, fuelUsecase).InitRoutes(report)
 	}
 
 	// Graceful shutdown
