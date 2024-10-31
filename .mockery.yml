@@ -1,0 +1,3 @@
+all: true
+keeptree: true
+disable-version-string: true

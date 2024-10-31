@@ -33,5 +33,4 @@ build: ## Build Code to Binary Artifact
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-s -w" -o $(CI_PROJECT_DIR)/$(ARTIFACT_DIR)/$(CI_PROJECT_NAME)
 
 mock: ## Automatically regenerate all mocking interface
-	@go get github.com/maxbrunsfeld/counterfeiter/v6
-	@go generate ./...
+	@mockery
