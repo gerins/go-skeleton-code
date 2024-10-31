@@ -1,6 +1,6 @@
-package fuel
+package dto
 
-type GetRequest struct {
+type FuelGetRequest struct {
 	ID   int    `param:"id"`
 	Type string `json:"type"`
 

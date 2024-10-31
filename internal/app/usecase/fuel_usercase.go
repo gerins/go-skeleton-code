@@ -1,26 +1,28 @@
-package fuel
+package usecase
 
 import (
 	"context"
 
 	"go-skeleton-code/config"
+	"go-skeleton-code/internal/app/dto"
+	"go-skeleton-code/internal/app/model"
 	"go-skeleton-code/pkg/jwt"
 )
 
 type usecase struct {
-	fuelRepository Repository
+	fuelRepository model.FuelRepository
 	securityConfig config.Security
 }
 
-// NewUsecase returns new usecase.
-func NewUsecase(securityConfig config.Security, fuelRepository Repository) *usecase {
+// NewFuelUsecase returns new usecase.
+func NewFuelUsecase(securityConfig config.Security, fuelRepository model.FuelRepository) *usecase {
 	return &usecase{
 		fuelRepository: fuelRepository,
 		securityConfig: securityConfig,
 	}
 }
 
-func (u *usecase) List(ctx context.Context, req GetRequest) ([]Fuel, int, error) {
+func (u *usecase) List(ctx context.Context, req dto.FuelGetRequest) ([]model.Fuel, int, error) {
 	list, totalItem, err := u.fuelRepository.List(ctx, req)
 	if err != nil {
 		return nil, 0, err
@@ -29,12 +31,12 @@ func (u *usecase) List(ctx context.Context, req GetRequest) ([]Fuel, int, error)
 	return list, totalItem, nil
 }
 
-func (u *usecase) Detail(ctx context.Context, req GetRequest) (Fuel, error) {
+func (u *usecase) Detail(ctx context.Context, req dto.FuelGetRequest) (model.Fuel, error) {
 	_ = jwt.GetPayloadFromContext(ctx)
 
 	detail, err := u.fuelRepository.Detail(ctx, req)
 	if err != nil {
-		return Fuel{}, err
+		return model.Fuel{}, err
 	}
 
 	return detail, err

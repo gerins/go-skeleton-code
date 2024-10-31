@@ -1,8 +1,10 @@
-package fuel
+package model
 
 import (
 	"context"
 	"time"
+
+	"go-skeleton-code/internal/app/dto"
 )
 
 type Fuel struct {
@@ -19,14 +21,14 @@ func (Fuel) TableName() string {
 	return "fuels"
 }
 
-type Usecase interface {
-	List(ctx context.Context, req GetRequest) ([]Fuel, int, error)
-	Detail(ctx context.Context, req GetRequest) (Fuel, error)
+type FuelUsecase interface {
+	List(ctx context.Context, req dto.FuelGetRequest) ([]Fuel, int, error)
+	Detail(ctx context.Context, req dto.FuelGetRequest) (Fuel, error)
 }
 
-type Repository interface {
-	List(ctx context.Context, req GetRequest) ([]Fuel, int, error)
-	Detail(ctx context.Context, req GetRequest) (Fuel, error)
+type FuelRepository interface {
+	List(ctx context.Context, req dto.FuelGetRequest) ([]Fuel, int, error)
+	Detail(ctx context.Context, req dto.FuelGetRequest) (Fuel, error)
 	Create(ctx context.Context, payload Fuel) (Fuel, error)
 	Update(ctx context.Context, payload Fuel) error
 	Delete(ctx context.Context, id int) error

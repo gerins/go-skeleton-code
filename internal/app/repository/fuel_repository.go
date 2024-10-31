@@ -1,32 +1,34 @@
-package fuel
+package repository
 
 import (
 	"context"
 
 	"gorm.io/gorm"
 
+	"go-skeleton-code/internal/app/dto"
+	"go-skeleton-code/internal/app/model"
 	gormPkg "go-skeleton-code/pkg/gorm"
 	"go-skeleton-code/pkg/log"
 )
 
-type repository struct {
+type fuelRepository struct {
 	readDB  *gorm.DB
 	writeDB *gorm.DB
 }
 
-// NewRepository returns new fuel Repository.
-func NewRepository(readDB *gorm.DB, writeDB *gorm.DB) *repository {
-	return &repository{
+// NewFuelRepository returns new model.fuel Repository.
+func NewFuelRepository(readDB *gorm.DB, writeDB *gorm.DB) *fuelRepository {
+	return &fuelRepository{
 		readDB:  readDB,
 		writeDB: writeDB,
 	}
 }
 
-func (r *repository) List(ctx context.Context, req GetRequest) ([]Fuel, int, error) {
+func (r *fuelRepository) List(ctx context.Context, req dto.FuelGetRequest) ([]model.Fuel, int, error) {
 	var (
 		totalData int64
-		result    = make([]Fuel, 0)
-		tableName = Fuel{}.TableName()
+		result    = make([]model.Fuel, 0)
+		tableName = model.Fuel{}.TableName()
 		query     = r.readDB.WithContext(ctx).Table(tableName).Where(tableName + ".deleted_at IS NULL")
 	)
 
@@ -52,7 +54,7 @@ func (r *repository) List(ctx context.Context, req GetRequest) ([]Fuel, int, err
 	return result, int(totalData), nil
 }
 
-func (r *repository) Detail(ctx context.Context, req GetRequest) (Fuel, error) {
+func (r *fuelRepository) Detail(ctx context.Context, req dto.FuelGetRequest) (model.Fuel, error) {
 	var (
 		query = r.readDB.WithContext(ctx)
 	)
@@ -63,29 +65,29 @@ func (r *repository) Detail(ctx context.Context, req GetRequest) (Fuel, error) {
 		query = query.Where("type = ?", req.Type)
 	}
 
-	var result Fuel
+	var result model.Fuel
 	if err := query.First(&result, req.ID).Error; err != nil {
 		log.Context(ctx).Error(err)
-		return Fuel{}, err
+		return model.Fuel{}, err
 	}
 
 	return result, nil
 }
 
-func (r *repository) Create(ctx context.Context, payload Fuel) (Fuel, error) {
+func (r *fuelRepository) Create(ctx context.Context, payload model.Fuel) (model.Fuel, error) {
 	defer log.Context(ctx).RecordDuration("Create").Stop()
 
 	if err := r.writeDB.WithContext(ctx).Create(&payload).Error; err != nil {
 		log.Context(ctx).Error(err)
-		return Fuel{}, err
+		return model.Fuel{}, err
 	}
 
 	return payload, nil
 }
 
-func (r *repository) Update(ctx context.Context, payload Fuel) error {
+func (r *fuelRepository) Update(ctx context.Context, payload model.Fuel) error {
 	var (
-		query = r.writeDB.WithContext(ctx).Table(Fuel{}.TableName())
+		query = r.writeDB.WithContext(ctx).Table(model.Fuel{}.TableName())
 	)
 
 	defer log.Context(ctx).RecordDuration("Update").Stop()
@@ -103,14 +105,14 @@ func (r *repository) Update(ctx context.Context, payload Fuel) error {
 	return nil
 }
 
-func (r *repository) Delete(ctx context.Context, id int) error {
+func (r *fuelRepository) Delete(ctx context.Context, id int) error {
 	var (
 		query = r.writeDB.WithContext(ctx).Where("id", id)
 	)
 
 	defer log.Context(ctx).RecordDuration("Delete").Stop()
 
-	exec := query.Delete(&Fuel{})
+	exec := query.Delete(&model.Fuel{})
 	if exec.Error != nil {
 		log.Context(ctx).Error(exec.Error)
 		return exec.Error
