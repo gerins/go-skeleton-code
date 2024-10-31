@@ -6,6 +6,7 @@ import (
 
 	"go-skeleton-code/config"
 	"go-skeleton-code/internal/app/handler"
+	"go-skeleton-code/internal/app/middleware"
 	"go-skeleton-code/internal/app/repository"
 	"go-skeleton-code/internal/app/usecase"
 	"go-skeleton-code/pkg/gorm"
@@ -36,7 +37,7 @@ func Init(gin *gin.Engine, cfg *config.Config) chan bool {
 	/**********************************************
 	 *                 Handler
 	 *********************************************/
-	master := gin.Group("/v3/master")
+	master := gin.Group("/v3/master", middleware.SetAPITimeout(defaultTimeout))
 	{
 		handler.NewFuelHandler(defaultTimeout, validator, fuelUsecase).InitRoutes(master)
 	}

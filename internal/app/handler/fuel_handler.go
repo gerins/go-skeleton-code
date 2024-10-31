@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -35,10 +34,11 @@ func (h *fuelHandler) InitRoutes(g *gin.RouterGroup) {
 }
 
 func (h *fuelHandler) GetHandler(g *gin.Context) {
-	ctx, cancel := context.WithTimeout(g.Request.Context(), h.timeout)
-	defer cancel()
+	var (
+		ctx            = g.Request.Context()
+		requestPayload dto.FuelGetRequest
+	)
 
-	var requestPayload dto.FuelGetRequest
 	if err := g.Bind(&requestPayload); err != nil {
 		response.Failed(g, err)
 		return
@@ -59,10 +59,11 @@ func (h *fuelHandler) GetHandler(g *gin.Context) {
 }
 
 func (h *fuelHandler) DetailHandler(g *gin.Context) {
-	ctx, cancel := context.WithTimeout(g.Request.Context(), h.timeout)
-	defer cancel()
+	var (
+		ctx            = g.Request.Context()
+		requestPayload dto.FuelGetRequest
+	)
 
-	var requestPayload dto.FuelGetRequest
 	if err := g.Bind(&requestPayload); err != nil {
 		response.Failed(g, err)
 		return
