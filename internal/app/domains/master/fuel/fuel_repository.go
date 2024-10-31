@@ -30,6 +30,8 @@ func (r *repository) List(ctx context.Context, req GetRequest) ([]Fuel, int, err
 		query     = r.readDB.WithContext(ctx).Table(tableName).Where(tableName + ".deleted_at IS NULL")
 	)
 
+	defer log.Context(ctx).RecordDuration("List").Stop()
+
 	if req.Type != "" {
 		query = query.Where("type = ?", req.Type)
 	}
@@ -55,6 +57,8 @@ func (r *repository) Detail(ctx context.Context, req GetRequest) (Fuel, error) {
 		query = r.readDB.WithContext(ctx)
 	)
 
+	defer log.Context(ctx).RecordDuration("Detail").Stop()
+
 	if req.Type != "" {
 		query = query.Where("type = ?", req.Type)
 	}
@@ -69,6 +73,8 @@ func (r *repository) Detail(ctx context.Context, req GetRequest) (Fuel, error) {
 }
 
 func (r *repository) Create(ctx context.Context, payload Fuel) (Fuel, error) {
+	defer log.Context(ctx).RecordDuration("Create").Stop()
+
 	if err := r.writeDB.WithContext(ctx).Create(&payload).Error; err != nil {
 		log.Context(ctx).Error(err)
 		return Fuel{}, err
@@ -81,6 +87,8 @@ func (r *repository) Update(ctx context.Context, payload Fuel) error {
 	var (
 		query = r.writeDB.WithContext(ctx).Table(Fuel{}.TableName())
 	)
+
+	defer log.Context(ctx).RecordDuration("Update").Stop()
 
 	exec := query.Updates(payload)
 	if exec.Error != nil {
@@ -99,6 +107,8 @@ func (r *repository) Delete(ctx context.Context, id int) error {
 	var (
 		query = r.writeDB.WithContext(ctx).Where("id", id)
 	)
+
+	defer log.Context(ctx).RecordDuration("Delete").Stop()
 
 	exec := query.Delete(&Fuel{})
 	if exec.Error != nil {
