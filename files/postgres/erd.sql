@@ -10,28 +10,21 @@ $$ language 'plpgsql';
 
 ---------------------------------------------------------------------------------------------------------------------
 
-CREATE TABLE users (
+CREATE TABLE fuels (
     id                              SERIAL PRIMARY KEY,
-    full_name                       VARCHAR(128) NOT NULL DEFAULT '',
-    email                           VARCHAR(128) NOT NULL,
-    phone_number                    VARCHAR(128) NOT NULL DEFAULT '',
-    password                        VARCHAR(512) NOT NULL,
-    status                          BOOLEAN NOT NULL DEFAULT true,
+    type                            VARCHAR(255) DEFAULT '',
+    description                     VARCHAR(255) DEFAULT '',
+    unit                            VARCHAR(255) DEFAULT '',
     created_at                      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at                      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     deleted_at                      TIMESTAMP WITH TIME ZONE 
 );
 
-CREATE TRIGGER users BEFORE UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+CREATE TRIGGER fuels BEFORE UPDATE ON fuels FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 
-INSERT INTO users (
+INSERT INTO fuels (
     "id",
-    "full_name",
-    "email",
-    "phone_number",
-    "password",
-    "status",
     "deleted_at"
-) VALUES (0, '', '', '', '', false, now());
+) VALUES (0, now());
 
 ---------------------------------------------------------------------------------------------------------------------

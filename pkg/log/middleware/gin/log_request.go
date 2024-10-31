@@ -7,10 +7,22 @@ import (
 	"io"
 	"net/http"
 
-	"go-skeleton-code/pkg/log"
-
 	"github.com/gin-gonic/gin"
+
+	"go-skeleton-code/pkg/log"
 )
+
+// ResponseBodyWriter wraps Gin's ResponseWriter to capture the response body.
+type ResponseBodyWriter struct {
+	gin.ResponseWriter
+	body *bytes.Buffer
+}
+
+// Write writes data to the buffer and the original ResponseWriter.
+func (w *ResponseBodyWriter) Write(data []byte) (int, error) {
+	w.body.Write(data)                  // Write to buffer
+	return w.ResponseWriter.Write(data) // Write to original ResponseWriter
+}
 
 // SetLogRequest sets up the logging request in the Gin context.
 func SetLogRequest() gin.HandlerFunc {
@@ -39,14 +51,20 @@ func SaveLogRequest() gin.HandlerFunc {
 		reqBody, _ := io.ReadAll(c.Request.Body)
 		c.Request.Body = io.NopCloser(io.NopCloser(bytes.NewBuffer(reqBody))) // Re-read buffer for next handler
 
+		// Create a ResponseBodyWriter
+		bodyWriter := &ResponseBodyWriter{
+			ResponseWriter: c.Writer,
+			body:           bytes.NewBufferString(""),
+		}
+
+		// Replace Gin's ResponseWriter with our custom writer
+		c.Writer = bodyWriter
+
 		// Process request in the main handler
 		c.Next()
 
-		// Capture response
-		respBody, _ := io.ReadAll(c.Request.Response.Body)
-
 		// Save log request
-		extractRequestData(ctx, c, reqBody, respBody)
+		extractRequestData(ctx, c, reqBody, bodyWriter.body.Bytes())
 		log.Context(ctx).Save()
 	}
 }

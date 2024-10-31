@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm"
 
 	serverError "go-skeleton-code/pkg/error"
-	"go-skeleton-code/pkg/log"
 )
 
 type DefaultResponse struct {
@@ -57,7 +56,6 @@ func Failed(g *gin.Context, err error) {
 	var (
 		generalError = serverError.ErrGeneralError(nil)
 		httpRespCode = generalError.HTTPCode
-		rawError     = err
 	)
 
 	// Default response
@@ -74,14 +72,10 @@ func Failed(g *gin.Context, err error) {
 
 	// Check for wrapped server error
 	if serverErr, ok := err.(serverError.ServerError); ok {
-		rawError = serverErr.RawError
 		httpRespCode = serverErr.HTTPCode
 		response.Code = serverErr.Code
 		response.Message = serverErr.Message
 	}
-
-	// Log the error in the provided context
-	log.Context(g.Request.Context()).ExtraData["error"] = rawError.Error()
 
 	g.JSON(httpRespCode, response)
 }

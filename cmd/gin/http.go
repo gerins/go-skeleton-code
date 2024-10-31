@@ -25,19 +25,20 @@ type HTTPServer struct {
 func NewHTTPServer(cfg *config.Config) *HTTPServer {
 	// Optional: set Gin to release mode for production
 	gin.SetMode(gin.ReleaseMode)
+	server := gin.New()
+
+	// Apply middleware
+	server.Use(gin.Recovery())                 // Built-in Gin recovery middleware
+	server.Use(middlewareLog.SetLogRequest())  // Custom Logging middleware
+	server.Use(middlewareLog.SaveLogRequest()) // Custom Request and response logging
 
 	return &HTTPServer{
 		cfg:    cfg,
-		Server: gin.New(),
+		Server: server,
 	}
 }
 
 func (s *HTTPServer) Run() chan bool {
-	// Apply middleware
-	s.Server.Use(gin.Recovery())                 // Built-in Gin recovery middleware
-	s.Server.Use(middlewareLog.SetLogRequest())  // Custom Logging middleware
-	s.Server.Use(middlewareLog.SaveLogRequest()) // Custom Request and response logging
-
 	// Health check route
 	s.Server.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "OK")
@@ -53,13 +54,13 @@ func (s *HTTPServer) Run() chan bool {
 		}
 	)
 
+	log.Infof("%v server app and running %v", s.cfg.App.Name, address)
+
 	go func() {
 		// service connections
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("%v server, %v", s.cfg.App.Name, err)
 		}
-
-		log.Infof("%v server app and running, %v", s.cfg.App.Name, address)
 	}()
 
 	// Graceful shutdown on interrupt

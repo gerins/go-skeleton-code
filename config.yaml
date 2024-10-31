@@ -31,7 +31,7 @@ dependencies:
       port: 5432
       user: root
       pass: admin
-      name: go-crypto-exchange
+      name: go-skeleton-code
       debugLog: false         # Disable for optimal performance
       pool:
         maxIdleConn: 25
@@ -43,7 +43,7 @@ dependencies:
       port: 5432
       user: root
       pass: admin
-      name: go-crypto-exchange
+      name: go-skeleton-code
       debugLog: false         # Disable for optimal performance
       pool:
         maxIdleConn: 25
