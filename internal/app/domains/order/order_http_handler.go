@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/labstack/echo/v4"
 
 	"go-skeleton-code/config"
 	"go-skeleton-code/internal/app/domains/order/model"
-	"go-skeleton-code/pkg/response"
+	middleware "go-skeleton-code/internal/app/middleware/http/gin"
+	response "go-skeleton-code/pkg/response/gin"
 )
 
 type httpHandler struct {
@@ -29,26 +29,28 @@ func NewHTTPHandler(orderUsecase model.Usecase, timeout time.Duration, securityC
 }
 
 func (h *httpHandler) InitRoutes(g *gin.RouterGroup) {
-	// v1 := g.Group("/v1/order")
-	// v1.Use(httpMiddleware.ValidateJwtToken([]byte(h.securityConfig.Jwt.Key)))
-	// {
-	// 	v1.POST("", h.OrderHandler)
-	// }
+	v1 := g.Group("/v1/order")
+	v1.Use(middleware.ValidateJwtToken([]byte(h.securityConfig.Jwt.Key)))
+	{
+		v1.POST("", h.OrderHandler)
+	}
 }
 
-func (h *httpHandler) OrderHandler(c echo.Context) error {
-	ctx, cancel := context.WithTimeout(c.Get("ctx").(context.Context), h.timeout)
+func (h *httpHandler) OrderHandler(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), h.timeout)
 	defer cancel()
 
 	var requestPayload model.OrderRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return response.Failed(c, err)
+		response.Failed(c, err)
+		return
 	}
 
 	orderResult, err := h.orderUsecase.ProcessOrder(ctx, requestPayload)
 	if err != nil {
-		return response.Failed(c, err)
+		response.Failed(c, err)
+		return
 	}
 
-	return response.Success(c, orderResult)
+	response.Success(c, orderResult)
 }

@@ -9,7 +9,7 @@ import (
 
 	serverError "go-skeleton-code/pkg/error"
 	"go-skeleton-code/pkg/jwt"
-	"go-skeleton-code/pkg/response"
+	"go-skeleton-code/pkg/response/echo"
 )
 
 func ValidateRole(roles ...string) echo.MiddlewareFunc {

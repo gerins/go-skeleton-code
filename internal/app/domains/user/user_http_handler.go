@@ -5,9 +5,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/labstack/echo/v4"
 
-	"go-skeleton-code/pkg/response"
+	response "go-skeleton-code/pkg/response/gin"
 )
 
 type httpHandler struct {
@@ -23,43 +22,48 @@ func NewHTTPHandler(userUsecase Usecase, timeout time.Duration) interface{ InitR
 }
 
 func (h *httpHandler) InitRoutes(g *gin.RouterGroup) {
-	// v1 := g.Group("/v1/user")
-	// {
-	// v1.POST("/login", h.LoginHandler)
-	// v1.POST("/register", h.RegisterHandler)
-	// }
+	v1 := g.Group("/v1/user")
+	{
+		v1.POST("/login", h.LoginHandler)
+		v1.POST("/register", h.RegisterHandler)
+	}
 }
 
-func (h *httpHandler) LoginHandler(c echo.Context) error {
-	ctx, cancel := context.WithTimeout(c.Get("ctx").(context.Context), h.timeout)
+func (h *httpHandler) LoginHandler(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), h.timeout)
 	defer cancel()
 
 	var requestPayload LoginRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return response.Failed(c, err)
+		response.Failed(c, err)
+		return
 	}
 
 	loginResult, err := h.userUsecase.Login(ctx, requestPayload)
 	if err != nil {
-		return response.Failed(c, err)
+		response.Failed(c, err)
+		return
 	}
 
-	return response.Success(c, loginResult)
+	response.Success(c, loginResult)
+	return
 }
 
-func (h *httpHandler) RegisterHandler(c echo.Context) error {
-	ctx, cancel := context.WithTimeout(c.Get("ctx").(context.Context), h.timeout)
+func (h *httpHandler) RegisterHandler(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), h.timeout)
 	defer cancel()
 
 	var requestPayload RegisterRequest
 	if err := c.Bind(&requestPayload); err != nil {
-		return response.Failed(c, err)
+		response.Failed(c, err)
+		return
 	}
 
 	registerResult, err := h.userUsecase.Register(ctx, requestPayload)
 	if err != nil {
-		return response.Failed(c, err)
+		response.Failed(c, err)
+		return
 	}
 
-	return response.Success(c, registerResult)
+	response.Success(c, registerResult)
 }
