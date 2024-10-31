@@ -55,9 +55,8 @@ type Security struct {
 }
 
 type Dependencies struct {
-	Cache         Cache
-	MessageBroker MessageBroker
-	Database      struct {
+	Cache    Cache
+	Database struct {
 		Read  Database
 		Write Database
 	}
@@ -67,16 +66,6 @@ type Cache struct {
 	Address  string
 	Password string
 	Database int
-}
-
-type MessageBroker struct {
-	Brokers  string
-	Group    string
-	Consumer struct {
-		Topic struct {
-			MatchOrder string
-		}
-	}
 }
 
 type Database struct {
@@ -119,9 +108,6 @@ func ParseConfigFile(configName string) *Config {
 	}
 	if env := os.Getenv("REDIS_ADDRESS"); env != "" {
 		config.Dependencies.Cache.Address = env
-	}
-	if env := os.Getenv("KAFKA_ADDRESS"); env != "" {
-		config.Dependencies.MessageBroker.Brokers = env
 	}
 
 	return config

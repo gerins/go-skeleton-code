@@ -1,63 +1,42 @@
 package app
 
 import (
-	"go-skeleton-code/pkg/log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"google.golang.org/grpc"
 
 	"go-skeleton-code/config"
-	"go-skeleton-code/internal/app/domains/order"
-	"go-skeleton-code/internal/app/domains/user"
+	"go-skeleton-code/internal/app/domains/fuel"
 	"go-skeleton-code/pkg/gorm"
-	"go-skeleton-code/pkg/kafka"
+	"go-skeleton-code/pkg/log"
 	"go-skeleton-code/pkg/redis"
 )
 
-func Init(gin *gin.Engine, g *grpc.Server, cfg *config.Config) chan bool {
+func Init(gin *gin.Engine, cfg *config.Config) chan bool {
 	var (
-		exitSignal         = make(chan bool)
-		validator          = validator.New()
-		apiTimeout         = cfg.App.HTTP.CtxTimeout
-		redis              = redis.Init(cfg.Dependencies.Cache)
-		readDatabase       = gorm.InitPostgres(cfg.Dependencies.Database.Read)
-		writeDatabase      = gorm.InitPostgres(cfg.Dependencies.Database.Write)
-		matchOrderConsumer = kafka.NewConsumer(cfg.Dependencies.MessageBroker, cfg.Dependencies.MessageBroker.Consumer.Topic.MatchOrder)
-		producer, writer   = kafka.NewProducer(cfg.Dependencies.MessageBroker.Brokers)
+		exitSignal     = make(chan bool)
+		_              = validator.New()
+		defaultTimeout = cfg.App.HTTP.CtxTimeout
+		redis          = redis.Init(cfg.Dependencies.Cache)
+		readDatabase   = gorm.InitPostgres(cfg.Dependencies.Database.Read)
+		writeDatabase  = gorm.InitPostgres(cfg.Dependencies.Database.Write)
 	)
 
-	// Init http router
+	// Repository
+	fuelRepository := fuel.NewRepository(readDatabase, writeDatabase)
+
+	// Usecase
+	fuelUsecase := fuel.NewUsecase(cfg.Security, fuelRepository)
+
+	// API handler
+	master := gin.Group("/v3/master")
 	{
-		// Repository
-		userRepository := user.NewRepository(readDatabase, writeDatabase)
-		orderRepository := order.NewRepository(readDatabase, writeDatabase)
-
-		// Usecase
-		userUsecase := user.NewUsecase(cfg.Security, validator, userRepository)
-		orderUsecase := order.NewUsecase(writeDatabase, producer, validator, orderRepository, userRepository)
-
-		// Handler
-		api := gin.Group("/api")
-		user.NewHTTPHandler(userUsecase, apiTimeout).InitRoutes(api)
-		order.NewHTTPHandler(orderUsecase, apiTimeout, cfg.Security).InitRoutes(api)
-
-		// Queue
-		order.NewQueueHandler(matchOrderConsumer, orderUsecase, apiTimeout).StartConsumer()
+		fuel.NewHandler(fuelUsecase, defaultTimeout).InitRoutes(master)
 	}
 
 	// Graceful shutdown
 	go func() {
 		<-exitSignal // Receive exit signal
 		log.Info("disconnecting service dependencies")
-
-		if err := matchOrderConsumer.Close(); err != nil {
-			log.Error(err)
-		}
-
-		if err := writer.Close(); err != nil {
-			log.Error(err)
-		}
 
 		if err := redis.Close(); err != nil {
 			log.Error(err)

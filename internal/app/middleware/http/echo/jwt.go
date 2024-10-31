@@ -4,13 +4,12 @@ import (
 	"context"
 	"strings"
 
-	"go-skeleton-code/pkg/log"
-
 	"github.com/labstack/echo/v4"
 
 	serverError "go-skeleton-code/pkg/error"
 	"go-skeleton-code/pkg/jwt"
-	"go-skeleton-code/pkg/response"
+	"go-skeleton-code/pkg/log"
+	"go-skeleton-code/pkg/response/echo"
 )
 
 func ValidateJwtToken(secretKey []byte) echo.MiddlewareFunc {

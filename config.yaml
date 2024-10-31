@@ -25,12 +25,6 @@ dependencies:
     address: localhost:6379
     password:
     database: 0
-  messageBroker:
-    brokers: localhost:9092
-    group: go-skeleton-code
-    consumer:
-      topic:
-        matchOrder: match-order
   database:
     read:
       host: localhost

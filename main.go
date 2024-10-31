@@ -6,7 +6,6 @@ import (
 	"runtime"
 
 	gin "go-skeleton-code/cmd/gin"
-	grpc "go-skeleton-code/cmd/grpc"
 	"go-skeleton-code/config"
 	"go-skeleton-code/internal/app"
 	"go-skeleton-code/pkg/log"
@@ -20,7 +19,6 @@ func main() {
 	var (
 		cfg  = config.ParseConfigFile("config.yaml")
 		http = gin.NewHTTPServer(cfg)
-		grpc = grpc.NewGRPCServer(cfg)
 	)
 
 	// Init log
@@ -35,21 +33,18 @@ func main() {
 	})
 
 	// Init app
-	appExitSignal := app.Init(http.Server, grpc.Server, cfg)
+	appExitSignal := app.Init(http.Server, cfg)
 
 	// Run server
 	httpExitSignal := http.Run()
-	grpcExitSignal := grpc.Run()
 
 	interruptSignal := make(chan os.Signal, 1)
 	signal.Notify(interruptSignal, os.Interrupt)
 	for range interruptSignal {
 		appExitSignal <- true
 		httpExitSignal <- true
-		grpcExitSignal <- true
 		<-appExitSignal  // Finish
 		<-httpExitSignal // Finish
-		<-grpcExitSignal // Finish
 		return           // Now we can safely exit the app
 	}
 }

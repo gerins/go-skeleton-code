@@ -2,12 +2,10 @@ package response
 
 import (
 	"context"
-	"errors"
 	"math"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 
 	serverError "go-skeleton-code/pkg/error"
 	"go-skeleton-code/pkg/log"
@@ -60,16 +58,10 @@ func Failed(c echo.Context, err error) error {
 		rawError     = err
 	)
 
-	// Default response
 	response := DefaultResponse{
 		Code:    generalError.Code,
 		Message: generalError.Message,
 		Data:    nil,
-	}
-
-	// Default response for data not found in database
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		err = serverError.ErrDataNotFound(err)
 	}
 
 	// Check for wrapped server error
