@@ -61,9 +61,11 @@ func (s *HTTPServer) Run() chan bool {
 	go func() {
 		<-serverExitSignal
 		log.Info("stopping http server")
+
 		if err := s.Server.Shutdown(context.Background()); err != nil {
 			log.Fatalf("failed stopping server, %v", err)
 		}
+
 		log.Info("finished stopping http server")
 		serverExitSignal <- true // Send signal already finish the job
 	}()
