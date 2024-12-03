@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -65,9 +62,7 @@ func (s *HTTPServer) Run() chan bool {
 
 	// Graceful shutdown on interrupt
 	go func() {
-		quit := make(chan os.Signal, 1)
-		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-		<-quit
+		<-serverExitSignal
 
 		log.Info("stopping http server")
 
