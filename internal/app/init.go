@@ -1,12 +1,11 @@
 package app
 
 import (
-	"go-skeleton-code/pkg/log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"google.golang.org/grpc"
 
+	"go-skeleton-code/pkg/log"
 	"go-skeleton-code/config"
 	"go-skeleton-code/internal/app/domains/order"
 	"go-skeleton-code/internal/app/domains/user"
